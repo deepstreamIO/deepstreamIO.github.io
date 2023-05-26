@@ -43,7 +43,7 @@ Emitted if the list encounters an error. The error message is passed to the even
 
 ## Methods
 
-### whenReady( callback )
+### whenReady( callback? | Promise )
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
@@ -79,11 +79,12 @@ const entries = list.getEntries()
 console.log( entries ) // [ 'car/1', 'car2' ]
 ```
 
-### setEntries( entries )
+### setEntries( entries, callback? )
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
 |entries|Array|false|An array of record name strings|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
 
 Sets the contents of the list to the provided array of record names. To add or remove specific entries use `addEntry()` or `removeEntry()` respectively.
 
@@ -91,12 +92,17 @@ Sets the contents of the list to the provided array of record names. To add or r
 list.setEntries( [ 'car/1', 'car/2' ] );
 ```
 
-### addEntry( entry, index )
+### setEntriesWithAck( entries)
+
+Same as `setEntries` but returns a promise that fulfills when writing to cache or storage is completed.
+
+### addEntry( entry, index?, callback? )
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
 |entry|String|false|A record name that should be added to the list|
 |index|Number|true|An optional index that the new entry should be inserted at. If omitted, the new entry is appended to the end of the list.|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
 
 Adds a new record name to the list.
 
@@ -108,12 +114,13 @@ function addCar( number ) {
 }
 ```
 
-### removeEntry( entry, index )
+### removeEntry( entry, index?, callback? )
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
 |entry|String|false|A record name that should be removed to the list|
 |index|Number|true|An optional index that the entry should be removed from at. If ommited, all entries of the given name will be removed.|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
 
 Removes an entry from the list. `removeEntry` will not throw any error if the entry doesn't exist.
 
@@ -165,9 +172,18 @@ list.discard();
 It is important to make sure that `discard()` is called for any list that's no longer needed. If you only remove the listeners using `unsubscribe()` the server won't be notified and will continue to send updates to the client.
 :::
 
-### delete()
+### delete(callback? | Promise)
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|callback|Function|true|A function that will be invoked as soon as the list is deleted|
+
 Deletes the list on the server. This action deletes the list for all users from both cache and storage and is irreversible.
 
 ```javascript
 list.delete();
+```
+
+```javascript
+// ES6
+await list.delete();
 ```
