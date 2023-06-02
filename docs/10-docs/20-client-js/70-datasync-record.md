@@ -16,6 +16,10 @@ const recordName = `user/${client.getUid()}` // "user/iqaphzxy-2o1pnsvcnbo"
 const record = client.record.getRecord(recordName)
 ```
 
+:::info
+By creating/retrieving the record, the client will automatically receive all record updates made by other clients.
+:::
+
 ## Properties
 
 |Argument|Type|Description|
@@ -188,7 +192,7 @@ record.get('personalData.firstname') // 'Homer'
 |callback|Function|false|A function that is called whenever the value changes and the data passed through.|
 |triggerNow|Boolean|true| If true, the callback function will be called immediately with the current value.|
 
-Registers that a function will be called whenever the record's value changes. All of the record's data can be subscribed to by providing a callback function or when changes are performed to a specific path within the record.
+Registers a function will be called whenever the record's value changes. All of the record's data can be subscribed to by providing a callback function or when changes are performed to a specific path within the record.
 
 Optional: Passing `true` will execute the callback immediately with the record's current value.
 
@@ -226,7 +230,7 @@ user.subscribe('status', statusChanged, true)
 Removes a subscription previous made using `record.subscribe()`. Defining a path with `unsubscribe` removes that specific path, or with a callback, can remove it from generic subscriptions.
 
 :::info
-`unsubscribe` is entirely a client-side operation. To notify the server that the app would no longer interested in the record, use `discard()` instead.
+`unsubscribe` is entirely a client-side operation. To notify the server that the app would no longer interested in the record, and thus do not receive more data updates, use `discard()` instead.
 :::
 
 Unsubscribe all callbacks registered with the path `status`:
