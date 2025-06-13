@@ -49,7 +49,7 @@ serverName: UUID
 showLogo: true
 dependencyInitializationTimeout: 2000
 exitOnFatalError: false
-logLevel: INFO
+logLevel: 0
 #libDir: ../lib
 ```
 
@@ -64,12 +64,12 @@ When starting, a server can show the deepstream logo. This setting is best left 
 _Default_: `true`
 
 ### logLevel
-The logLevel to use across the application. Sets at what level and above the server should log messages. Valid levels are `DEBUG`, `INFO`,
-`WARN`, `ERROR`, and `OFF`.
+The logLevel to use across the application. Sets at what level and above the server should log messages. Valid levels are `0` (DEBUG), `1` (INFO), `2` (WARN), `3` (ERROR), `4` (FATAL) and `100` (OFF).
+
 
 This value can be overwritten in the logger plugin options.
 
-_Default_: INFO
+_Default_: `0`
 
 ### dependencyInitializationTimeout
 Sets how long deepstream will wait for dependencies to initialize.
