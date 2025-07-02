@@ -101,7 +101,7 @@ After identifier matching, deepstream will evaluate the right-hand side expressi
 Additionally, you can use the current time (on the server) with `now`, you can access deepstream data, and cross-reference records.
 
 Any deepstream client needs to log onto the server and the user data can be accessed with Valve but note that user's are not necessarily authenticated unless this is forbidden in the config. You can check for authenticated users with `user.isAuthenticated` (the ternary operator `?:` may prove useful when checking
-this property). If a client authenticated, its user name can be accessed with `user.name` and its server data with `user.data`.  Additionally, Valve allows
+this property). If a client authenticated, its user id can be accessed with `user.userId` and its server data with `user.data`.  Additionally, Valve allows
 you to examine data associated with a rule, e.g., for a record, this means one can examine old and new value.  Since the data is dependent on the type (record,
 event, or RPC, and so on), we will discuss this detail in the sections on the specific types.
 
