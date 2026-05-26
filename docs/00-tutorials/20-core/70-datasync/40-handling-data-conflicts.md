@@ -51,3 +51,27 @@ rec.setMergeStrategy(( record, remoteData, remoteVersion, callback ) => {
 ## Avoiding merge conflicts
 The more granular you structure your records, the rarer merge conflicts will be. Generally, deepstream is better at coping with a large number of small records than with a few very large ones.
 Especially when it comes to records with high upstream and downstream rates, e.g. am item on an auction site with quickly updating prices, it might make sense to make the upstream (e.g. the bids a client submits) a separate record or model them as events or RPCs
+
+## Atomic multi-path updates with setMulti
+
+A common source of self-inflicted conflicts is a compound mutation that requires several related `set()` calls — for example, updating two related fields, or maintaining the linked-list pointers inside a [Dequeue](../../../docs/client-js/datasync-dequeue) (`unshift`, `push`, `insertEntry`, `removeEntry` each touch 2–3 paths).
+
+With three back-to-back `set()` calls you bump the version three times, and each bump independently races every other writer. Two concurrent unshifts on the same Dequeue can leave it in a half-applied state where the new node exists but the head pointer hasn't moved.
+
+`record.setMulti(patches)` (and the Dequeue mutators, which use it internally) batches all of those path updates into a single `PATCH_MULTI` message — one version bump, one race window, all-or-nothing application. The merge-strategy story is unchanged: a conflicting `PATCH_MULTI` triggers the same merge-strategy callback that a single `PATCH` would.
+
+```javascript
+// Instead of three independent writes that can race with each other...
+record.set('a', 1)
+record.set('b', 2)
+record.set('c', 3)
+
+// ...batch them into one atomic update:
+record.setMulti([
+  { path: 'a', data: 1 },
+  { path: 'b', data: 2 },
+  { path: 'c', data: 3 }
+])
+```
+
+This requires server **10.1+** and client **7.1+**. On older servers the batched write is rejected with `INVALID_MESSAGE_DATA`; use `setMultiWithAck` (or pass a callback) to detect this and fall back to `setEntries` or sequential `set` calls.

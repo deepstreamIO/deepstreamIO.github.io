@@ -28,6 +28,10 @@ navigator.geolocation.watchPosition(position => {
 ## Paths
 `get()`, `set()` and `subscribe()` can be used to get the entire record's data, but also support "paths". Paths let you access sub-parts of your record's data using JSON notation, e.g. `pets[1].fur.color`. If a value for a path that doesn't exist yet is set, the path will be created on the fly.
 
+:::caution
+Since server **v10.0.5**, paths containing any of `__proto__`, `constructor`, or `prototype` are rejected to prevent prototype-pollution attacks on the cached record state. Writes against such paths come back as `INVALID_MESSAGE_DATA` and the record is left unchanged. Namespace any user-controlled keys that could collide (e.g. store as `meta.userConstructor` instead of `constructor`).
+:::
+
 ## Record lifecycle
 When calling `client.record.getRecord(name)`, one of three things can happen:
 

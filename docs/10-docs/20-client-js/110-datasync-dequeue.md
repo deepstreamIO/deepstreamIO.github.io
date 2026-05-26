@@ -5,6 +5,10 @@ description: API docs for deepstream's double-ended queue (Dq) object, a network
 
 Dq's are a new implementation of lists that favour network efficiency over record size. They are presented at the client level just like a list, an array of record names, but have a different API for data handling that uses a fraction of message size to propagate changes, unlike lists that require for every change to resend the complete list over the wire. The caveat is the record can be up to 1.9x the size of a list, but propagating changes has a message size of ~100 bytes (depending on the actual data that is being added/removed from the dq).
 
+:::info
+Mutations (`unshift`, `push`, `insertEntry`, `removeEntry`) require multiple writes to the underlying linked-list structure — a new node plus updates to the head pointer and neighbouring nodes. As of deepstream **server 10.1+** and **client 7.1+**, these writes are bundled into a single atomic `PATCH_MULTI` message: one version bump, one cache write, no observable intermediate state. Older deployments issued the writes individually, which opened a race window in which two concurrent writers could collide on the version counter and produce `VERSION_EXISTS` errors. If you connect a new client to an old server, mutations will be rejected with `INVALID_MESSAGE_DATA`; pass a callback (or use the `*WithAck` variants) to detect this and fall back to `setEntries`.
+:::
+
 ## Creating Dqs
 Double ended queues are created and retrieved using `client.record.getDq( 'name' );`
 
@@ -126,30 +130,75 @@ Remove last value from dq and return it
 dq.pop()
 ```
 
-### unshift
+### unshift( entry, callback? )
 
-Add value at first position
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|entry|String|false|A record name to insert at the head of the dq|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
+
+Adds the entry at the first position. The pointer updates to the new node, the head, and the previous first node's back-pointer are sent as a single atomic `PATCH_MULTI` message; either all three apply or the whole insert is rejected.
 
 ```javascript
 dq.unshift('first')
+
+// With write acknowledgement
+dq.unshift('first', err => {
+  if (err) console.log('unshift failed:', err)
+})
 ```
 
-### push
+### unshiftWithAck( entry )
 
-Add value at last position
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|entry|String|false|A record name to insert at the head of the dq|
+
+Same as `unshift` but returns a promise that resolves when writing to cache or storage completes, and rejects on server error (including `INVALID_MESSAGE_DATA` when the server doesn't support `PATCH_MULTI`).
+
+```javascript
+try {
+  await dq.unshiftWithAck('first')
+} catch (err) {
+  // fall back to setEntries if needed
+}
+```
+
+### push( entry, callback? )
+
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|entry|String|false|A record name to append at the tail of the dq|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
+
+Adds the entry at the last position. Like `unshift`, all pointer updates ship in a single atomic `PATCH_MULTI` message.
 
 ```javascript
 dq.push('last')
+
+// With write acknowledgement
+dq.push('last', err => {
+  if (err) console.log('push failed:', err)
+})
 ```
 
-### insertEntry( entry, index)
+### pushWithAck( entry )
+
+Same as `push` but returns a promise that resolves on successful write and rejects on server error.
+
+```javascript
+await dq.pushWithAck('last')
+```
+
+### insertEntry( entry, index, callback? )
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
 |entry|String|false|A record name that should be inserted to the dq|
 |index|Number|false|Index that the new entry should be inserted at|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
 
-Adds a new record name to the Dq at an intermediate position
+Adds a new record name to the Dq at an intermediate position. The new node, the next node's back-pointer, and (if present) the previous node's forward-pointer are written in a single atomic `PATCH_MULTI` message.
 
 ```javascript
 function addCarAt2( number ) {
@@ -179,7 +228,7 @@ function removeCar( carRecord ) {
 |Argument|Type|Optional|Description|
 |---|---|---|---|
 |position|String|true|Option to subscribe to changes to the `first` or `last` element of the dq|
-|callback|Function|false|A callback function that will be called whenever the content of the dq, or the `first|last` element changes|
+|callback|Function|false|A callback function that will be called whenever the content of the dq, or the `first/last` element changes|
 |triggerNow|Boolean|true|If true, the callback function will be called immediately with the current value|
 
 Registers a function that will be invoked whenever any changes to the dq's contents occur. You can pass the position: `first|last` as first argument to be informed of changes made only to the `first|last` element. Optionally you can also pass `true` to execute the callback function straight away with the dq's current entries.

@@ -10,7 +10,7 @@ You can specify permission rules for the following interactions
 
 ### record
 - `create` triggered when a record is requested for the first time
-- `write` operations that change a record's data. (PATCH & UPDATE)
+- `write` operations that change a record's data. (PATCH, UPDATE & PATCH_MULTI)
 - `read` reading a record's data
 - `delete` deleting a record
 - `listen` listen for other clients subscribing to a record

@@ -116,6 +116,19 @@ record.set('personalData.firstname', 'Homer', err => {
 })
 ```
 
+#### Forbidden paths
+
+Since server **v10.0.5**, paths containing any of `__proto__`, `constructor`, or `prototype` are rejected by the server to prevent prototype-pollution attacks on the cached record state. Examples of paths that are now refused:
+
+```
+__proto__
+constructor.prototype.toString
+nested.__proto__.polluted
+arr[0].constructor
+```
+
+When such a path is sent by a client (via `set`, `setWithAck`, `setMulti`, or any path-bearing record write), the server responds with `INVALID_MESSAGE_DATA` for that write and the record state is left unchanged. The same validation now also runs inside Valve permission rule evaluation, so a forbidden path will surface as a permission/validation failure rather than reaching cache or storage. If you need to store keys named like that, namespace them — e.g. `meta.constructor` becomes `meta.userConstructor`.
+
 #### Write error notification feature
 
 Starting with deepstream v6, there is slight change in the `set` logic that allows faster operations with write error notification. If writing to cache or storage fails, a `RECORD_UPDATE_ERROR` error message will be forwarded to the record instance that can be listened to and thus manage the write error from the client, without having to explicitely wait for the write acknowledgement. Before deepstream v6 if such error ocurred the client was not aware of it.
@@ -168,6 +181,70 @@ await record.setWithAck({
 
 // Update only firstname with write acknowledgement
 await record.setWithAck('personalData.firstname', 'Marge')
+```
+
+### setMulti(patches, callback?)
+
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|patches|Array&lt;\{path, data\}&gt;|false|An ordered list of `{path, data}` operations to apply atomically. Setting `data: undefined` on an entry erases that path.|
+|callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
+
+Applies an ordered batch of path updates as a **single** message on the wire — one `PATCH_MULTI` action, one server-side version bump, one cache and storage write. Either all of the patches are applied, or none of them are; there is no observable intermediate state.
+
+`setMulti` exists so that compound mutations (for example, updating several related fields, or maintaining the linked-list pointers inside a Dequeue) can be performed atomically without three things going wrong that can go wrong with three back-to-back `set` calls:
+
+- **Version races.** Each `set` bumps the version and competes independently with other writers. A batched `setMulti` only opens one race window.
+- **Partial application on conflict.** If a second writer wins the race halfway through your sequence of `set` calls, you can be left with a half-applied state. `setMulti` is rejected as a whole or applied as a whole.
+- **Inability to ack a multi-step operation.** With individual `set` calls, only the last one's callback fires; with `setMulti`, the single callback covers the entire batch.
+
+```javascript
+// Update three related fields in one round trip, one version bump
+record.setMulti([
+  { path: 'personalData.firstname', data: 'Marge' },
+  { path: 'personalData.status', data: 'married' },
+  { path: 'children', data: ['Bart', 'Maggie', 'Lisa'] }
+])
+
+// Mix sets and erases by passing data: undefined
+record.setMulti([
+  { path: 'personalData.firstname', data: 'Homer' },
+  { path: 'personalData.middleName', data: undefined }   // erases the path
+])
+
+// With a write-ack callback
+record.setMulti(
+  [
+    { path: 'a', data: 1 },
+    { path: 'b', data: 2 }
+  ],
+  err => {
+    if (err) console.log('setMulti failed:', err)
+  }
+)
+```
+
+:::info
+`setMulti` requires both the server and the client to be on a version that supports the `PATCH_MULTI` action. When talking to an older server the write is rejected with `INVALID_MESSAGE_DATA`. Use `setMultiWithAck` (or pass a callback) if you need to detect this and fall back to `setEntries` or a sequence of `set` calls.
+:::
+
+### setMultiWithAck(patches)
+
+|Argument|Type|Optional|Description|
+|---|---|---|---|
+|patches|Array&lt;\{path, data\}&gt;|false|An ordered list of `{path, data}` operations to apply atomically|
+
+Same as `setMulti`, but returns a promise that resolves when writing to cache or storage completes, and rejects with the server error otherwise.
+
+```javascript
+try {
+  await record.setMultiWithAck([
+    { path: 'a', data: 1 },
+    { path: 'b', data: 2 }
+  ])
+} catch (err) {
+  // err === 'INVALID_MESSAGE_DATA' on an old server, or a storage error
+}
 ```
 
 ### get(path)
