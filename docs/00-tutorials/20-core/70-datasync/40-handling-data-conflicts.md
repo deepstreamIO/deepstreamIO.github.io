@@ -56,9 +56,9 @@ Especially when it comes to records with high upstream and downstream rates, e.g
 
 A common source of self-inflicted conflicts is a compound mutation that requires several related `set()` calls — for example, updating two related fields, or maintaining the linked-list pointers inside a [Dequeue](../../../docs/client-js/datasync-dequeue) (`unshift`, `push`, `insertEntry`, `removeEntry` each touch 2–3 paths).
 
-With three back-to-back `set()` calls you bump the version three times, and each bump independently races every other writer. Two concurrent unshifts on the same Dequeue can leave it in a half-applied state where the new node exists but the head pointer hasn't moved.
+With multiple back-to-back `set()` calls you bump the version multiple times, and each bump independently races every other writer. Two concurrent `set` calls a record can leave it in a half-applied state where one succeeds but the other doesn't.
 
-`record.setMulti(patches)` (and the Dequeue mutators, which use it internally) batches all of those path updates into a single `PATCH_MULTI` message — one version bump, one race window, all-or-nothing application. The merge-strategy story is unchanged: a conflicting `PATCH_MULTI` triggers the same merge-strategy callback that a single `PATCH` would.
+`record.setMulti(patches)` batches all of those path updates into a single message — one version bump, one race window, all-or-nothing application. The merge-strategy story is unchanged: a conflicting `setMulti` update triggers the same merge-strategy callback that a single `set` would.
 
 ```javascript
 // Instead of three independent writes that can race with each other...

@@ -190,13 +190,13 @@ await record.setWithAck('personalData.firstname', 'Marge')
 |patches|Array&lt;\{path, data\}&gt;|false|An ordered list of `{path, data}` operations to apply atomically. Setting `data: undefined` on an entry erases that path.|
 |callback|Function|true|Will be called with the result of the write when using record write acknowledgements|
 
-Applies an ordered batch of path updates as a **single** message on the wire — one `PATCH_MULTI` action, one server-side version bump, one cache and storage write. Either all of the patches are applied, or none of them are; there is no observable intermediate state.
+Applies an ordered batch of path updates as a **single** message on the wire — one action, one server-side version bump, one cache and storage write. Either all of the patches are applied, or none of them are; there is no observable intermediate state.
 
-`setMulti` exists so that compound mutations (for example, updating several related fields, or maintaining the linked-list pointers inside a Dequeue) can be performed atomically without three things going wrong that can go wrong with three back-to-back `set` calls:
+`setMulti` exists so that compound mutations (for example, updating several related fields, or maintaining the linked-list pointers inside a Dequeue) can be performed atomically without multiple back-to-back `set` calls:
 
 - **Version races.** Each `set` bumps the version and competes independently with other writers. A batched `setMulti` only opens one race window.
 - **Partial application on conflict.** If a second writer wins the race halfway through your sequence of `set` calls, you can be left with a half-applied state. `setMulti` is rejected as a whole or applied as a whole.
-- **Inability to ack a multi-step operation.** With individual `set` calls, only the last one's callback fires; with `setMulti`, the single callback covers the entire batch.
+- **Ability to ack a multi-step operation.** with `setMulti`, the single callback covers the entire batch.
 
 ```javascript
 // Update three related fields in one round trip, one version bump
@@ -225,7 +225,7 @@ record.setMulti(
 ```
 
 :::info
-`setMulti` requires both the server and the client to be on a version that supports the `PATCH_MULTI` action. When talking to an older server the write is rejected with `INVALID_MESSAGE_DATA`. Use `setMultiWithAck` (or pass a callback) if you need to detect this and fall back to `setEntries` or a sequence of `set` calls.
+`setMulti` requires a server version >= 10.1 and client version >= 7.1. When talking to an older server the write is rejected with `INVALID_MESSAGE_DATA`. Use `setMultiWithAck` (or pass a callback) if you need to detect this and fall back to `setEntries` or a sequence of `set` calls.
 :::
 
 ### setMultiWithAck(patches)

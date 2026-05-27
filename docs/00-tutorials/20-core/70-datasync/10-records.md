@@ -32,6 +32,18 @@ navigator.geolocation.watchPosition(position => {
 Since server **v10.0.5**, paths containing any of `__proto__`, `constructor`, or `prototype` are rejected to prevent prototype-pollution attacks on the cached record state. Writes against such paths come back as `INVALID_MESSAGE_DATA` and the record is left unchanged. Namespace any user-controlled keys that could collide (e.g. store as `meta.userConstructor` instead of `constructor`).
 :::
 
+### setMulti
+Since server **v10.1.0** a new record method was implemented: `setMulti`. It allows to perform an atomic batch update on multiple paths of a single record: one version bump, and either all of the patches are applied, or none of them are; there is no observable intermediate state.
+
+```javascript
+// Update three related fields in one round trip, one version bump
+record.setMulti([
+  { path: 'personalData.firstname', data: 'Marge' },
+  { path: 'personalData.status', data: 'married' },
+  { path: 'children', data: ['Bart', 'Maggie', 'Lisa'] }
+])
+```
+
 ## Record lifecycle
 When calling `client.record.getRecord(name)`, one of three things can happen:
 
