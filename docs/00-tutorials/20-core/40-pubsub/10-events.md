@@ -49,11 +49,11 @@ client.event.emit('news/sports', 'football is happening')
 ## How to listen for event subscriptions
 deepstream allows clients to "listen" for other clients' event subscriptions. This is useful to create "active" data providers that only emit events if they are actually needed.
 
-Listeners can register for a pattern described by a regular expression, e.g. `'^news/.*'`.
+Listeners can register for a wildcard pattern. The pattern syntax supports `*` (matches any characters), `$varName` (matches a single path segment), and `[...]` (regex character class, for backward compatibility). See the [listening tutorial](/docs/tutorials/core/listening/#pattern-syntax) for full details.
 
 ```javascript
 // Client B
-client.event.listen('^news/.*', (match, response) => {
+client.event.listen('news/*', (match, response) => {
   console.log(match) // 'news/sports'
   if (/* if you want to provide */) {
     // start publishing data via `client.event.emit(eventName, /* data */)`

@@ -58,7 +58,7 @@ client.event.emit('notifications', 'Maria just came online')
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
-|pattern|String (regex)|false|The pattern to match events which subscription status you want to be informed of|
+|pattern|String (wildcard)|false|The pattern to match events which subscription status you want to be informed of. Supports `*`, `$varName` (single path segment), and `[...]` (regex character class). See [listening pattern syntax](/docs/tutorials/core/listening/#pattern-syntax).|
 |callback|Function|false|A function that will be called whenever an event matching the `pattern` has been initially subscribed to. When there are no more subscriptions to any events matching `pattern`, the callback passed to `response.onStop()` is called. Arguments are (String) match, and response (Object)|
 
 Registers the client as a listener for event subscriptions made by other clients. This is useful to create active data providers - processes that only send events if clients are actually interested in them. You can find more about listening in the [events tutorial](/docs/tutorials/core/pubsub/events#how-to-listen-for-event-subscriptions).
@@ -68,7 +68,7 @@ The callback is invoked with two arguments:
 - **response**: contains two functions (`accept` and `reject`), one of them needs to be called
 
 ```javascript
-client.event.listen('^news/.*', (match, response) => {
+client.event.listen('news/*', (match, response) => {
   // see tutorial for more details
 })
 ```
@@ -77,10 +77,10 @@ client.event.listen('^news/.*', (match, response) => {
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
-|pattern|String (regex)|false|he previously registered pattern|
+|pattern|String (wildcard)|false|The previously registered pattern|
 
 This removes a previously registered listening pattern and the user will no longer be listening for active/inactive subscriptions.
 
 ```javascript
-client.event.unlisten('^news/.*')
+client.event.unlisten('news/*')
 ```

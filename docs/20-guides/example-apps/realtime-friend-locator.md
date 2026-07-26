@@ -129,7 +129,7 @@ const geoSubscriptions = {};
 //here we listen to the list we created upon logging in.
 //the match will contain all the information in our list after the "/.*" . We our sending the match to the geoSubscription module, where we will extract its data and perform a RethinkDB query.
 
-ds.record.listen('users_within_radius/.*', (match, response) => {
+ds.record.listen('users_within_radius/*', (match, response) => {
     //start publishing data
     response.accept();
     if( !geoSubscriptions[ match ] ) {

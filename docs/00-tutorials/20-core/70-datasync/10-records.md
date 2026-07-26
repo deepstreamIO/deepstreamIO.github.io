@@ -118,11 +118,11 @@ record:
 ```
 
 ## Listening
-Records also support a concept called "listening". Every client can register as a listener for record name patterns, e.g. `^settings/.*`. Whenever other clients start subscribing to records that match said pattern, the listener will be notified.
+Records also support a concept called "listening". Every client can register as a listener for record name patterns. The pattern syntax supports `*` (matches any characters), `$varName` (matches a single path segment), and `[...]` (regex character class, for backward compatibility). See the [listening tutorial](/docs/tutorials/core/listening/#pattern-syntax) for full details. Whenever other clients start subscribing to records that match said pattern, the listener will be notified.
 
 ```javascript
 // Client B
-client.record.listen('settings/.*', (match, response) => {
+client.record.listen('settings/*', (match, response) => {
   console.log(match) // 'settings/security'
   if (/* if you want to provide */) {
     // start publishing to this record via `client.record.setData(match, data, ack)`

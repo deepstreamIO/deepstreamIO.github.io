@@ -29,6 +29,24 @@ As seen above, the amount of data being sent is effectively cut down to just wha
 
 Please note that with listening, a data provider starts providing data when the first client subscribes to the data until the last client unsubscribes from the data.
 
+## Pattern syntax
+
+When registering a listener, you specify a pattern that determines which subscription names the listener matches against. deepstream's pattern syntax supports the following wildcard tokens:
+
+| Token | Description | Example pattern | Matches | Does not match |
+|---|---|---|---|---|
+| `*` | Matches any characters (including `/`) | `weather/*` | `weather/berlin`, `weather/germany/berlin` | `news/berlin` |
+| `$varName` | Matches a single path segment (up to `/`) | `cars/$make/$model` | `cars/ferrari/458` | `cars/ferrari`, `cars/ferrari/458/spider` |
+| `[...]` | A regex character class matching one character from the set | `item/[a-z0-9]` | `item/1`, `item/a` | `item/10`, `item/ab` |
+
+All other characters are matched literally. Regex-special characters such as `.`, `+`, `(`, `)`, `{`, `}`, `^`, `$`, and `\` are automatically escaped.
+
+:::info Preferred syntax
+The `*` and `$varName` wildcard tokens are the preferred way to write patterns. They are safer and express intent more clearly. Regex character classes (`[...]`) and the legacy `.*` wildcard are supported for backward compatibility but should be avoided in new code.
+:::
+
+
+
 ## How to implement listening?
 
 Listening works with events, lists as well as records.

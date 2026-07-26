@@ -241,7 +241,7 @@ deepstream.rpc.provide('realtime_search', async (data, response) => {
     }
 })
 
-deepstream.record.listen('realtime_search/list_.*', async (name, response) => {
+deepstream.record.listen('realtime_search/list_*', async (name, response) => {
     const hash = /realtime_search\/list_(.*)/.match(name)[0]
     const data = await deepstream.record.snapshot(hash)
 
@@ -318,7 +318,7 @@ Giving us the output:
 11:53:13 AM | Initializing Deepstream connection
 11:53:13 AM | Successfully logged in to deepstream
 11:53:13 AM | Providing rpc method "realtime_search"
-11:53:13 AM | listening for realtime_search/list_.*
+11:53:13 AM | listening for realtime_search/list_*
 11:53:13 AM | realtime search provider ready
 ```
 
