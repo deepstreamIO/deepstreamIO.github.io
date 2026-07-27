@@ -58,7 +58,7 @@ client.event.emit('notifications', 'Maria just came online')
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
-|pattern|String (wildcard)|false|The pattern to match events which subscription status you want to be informed of. Supports `*`, `$varName` (single path segment), and `[...]` (regex character class). See [listening pattern syntax](/docs/tutorials/core/listening/#pattern-syntax).|
+|pattern|String (wildcard)|false|The pattern to match events which subscription status you want to be informed of. Supports `*`, `$varName` (single path segment), and `[...]` (regex character class). See [listening pattern syntax](/docs/tutorials/core/listening/index#pattern-syntax).|
 |callback|Function|false|A function that will be called whenever an event matching the `pattern` has been initially subscribed to. When there are no more subscriptions to any events matching `pattern`, the callback passed to `response.onStop()` is called. Arguments are (String) match, and response (Object)|
 
 Registers the client as a listener for event subscriptions made by other clients. This is useful to create active data providers - processes that only send events if clients are actually interested in them. You can find more about listening in the [events tutorial](/docs/tutorials/core/pubsub/events#how-to-listen-for-event-subscriptions).

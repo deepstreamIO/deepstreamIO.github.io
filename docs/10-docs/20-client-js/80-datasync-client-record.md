@@ -188,7 +188,7 @@ The same as `setData` but returns a Promise.
 
 |Argument|Type|Optional|Description|
 |---|---|---|---|
-|pattern|String (wildcard)|false|The pattern to match records which subscription status you want to be informed of. Supports `*`, `$varName` (single path segment), and `[...]` (regex character class). See [listening pattern syntax](/docs/tutorials/core/listening/#pattern-syntax).|
+|pattern|String (wildcard)|false|The pattern to match records which subscription status you want to be informed of. Supports `*`, `$varName` (single path segment), and `[...]` (regex character class). See [listening pattern syntax](/docs/tutorials/core/listening/index#pattern-syntax).|
 |callback|Function|false|A function that will be called whenever a record matching the `pattern` has been initially subscribed to. When there are no more subscriptions to any records matching `pattern`, the callback passed to `response.onStop()` is called. Arguments are (String) match, and response (Object).|
 
 Allows to listen for record subscriptions made by other clients. This is useful to create "active" data providers, e.g. providers that only provide data for records that users are actually interested in. You can find more about listening in the [record tutorial](../../tutorials/core/datasync/records/).

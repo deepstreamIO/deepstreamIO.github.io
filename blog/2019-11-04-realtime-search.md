@@ -329,6 +329,6 @@ Client:
 
 And that's it! As you can see getting realtime-results couldn't be easier.
 
-For a front-end example, more config options and permissions please checkout the [realtime-search guide](../docs/20-guides/realtime-search/00-intro.md).
+For a front-end example, more config options and permissions please checkout the [realtime-search guide](/docs/20-guides/realtime-search/00-intro).
 
 Thanks for reading!

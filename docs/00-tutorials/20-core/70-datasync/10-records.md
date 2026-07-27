@@ -118,7 +118,7 @@ record:
 ```
 
 ## Listening
-Records also support a concept called "listening". Every client can register as a listener for record name patterns. The pattern syntax supports `*` (matches any characters), `$varName` (matches a single path segment), and `[...]` (regex character class, for backward compatibility). See the [listening tutorial](/docs/tutorials/core/listening/#pattern-syntax) for full details. Whenever other clients start subscribing to records that match said pattern, the listener will be notified.
+Records also support a concept called "listening". Every client can register as a listener for record name patterns. The pattern syntax supports `*` (matches any characters), `$varName` (matches a single path segment), and `[...]` (regex character class, for backward compatibility). See the [listening tutorial](/docs/tutorials/core/listening/index#pattern-syntax) for full details. Whenever other clients start subscribing to records that match said pattern, the listener will be notified.
 
 ```javascript
 // Client B
