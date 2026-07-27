@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkdeepstreamio_github_io||=[]).push([[7472],{5513(e){e.exports=JSON.parse('{"title":"Recent posts","items":[{"title":"Realtime Search","permalink":"/blog/2019/11/04/realtime-search","unlisted":false,"date":"2019-11-04T00:00:00.000Z"}]}')}}]);
